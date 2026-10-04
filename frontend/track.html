@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Track request | Blood Matcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js"></script>
+</head>
+<body>
+<header id="site-header"></header>
+<main class="narrow">
+  <section class="card">
+    <h2>Track my request</h2>
+    <p class="sub">Use the request ID and access code shown after you sent your request.</p>
+    <form id="trackForm">
+      <label>Request ID <input id="tId" type="number" min="1" required></label>
+      <label>Access code <input id="tCode" required></label>
+      <button type="submit">Check status</button>
+    </form>
+    <p id="trackMsg" class="msg"></p>
+    <div id="trackBody"></div>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script>
+async function check() {
+  try {
+    const r = await api(`/requests/${$("tId").value}?code=${encodeURIComponent($("tCode").value)}`);
+    $("trackMsg").className = "msg";
+    const text = { PENDING: "Waiting for the donor to respond.", REJECTED: "The donor declined. Try another donor.", ACCEPTED: "The donor accepted. Contact details:" };
+    $("trackBody").innerHTML = `<div class="results">
+      <div class="donor"><div class="info"><strong>Your request</strong>
+        <small>Needs ${esc(r.seeker_blood_group)}, ${esc(r.units_needed)} unit(s), ${esc(r.urgency)}<br>Sent on ${esc(r.sent_at)}</small></div>
+        <span class="tag ${r.status}">${esc(r.status)}</span></div>
+      <div class="donor"><div class="drop"><span>${esc(r.sent_to.blood_group)}</span></div>
+        <div class="info"><strong>Sent to ${esc(r.sent_to.name)}</strong>
+          <small>${esc(r.sent_to.city)}<br>Only this donor has received your name and phone number.<br>${text[r.status]}</small>
+          ${r.donor ? `<br><strong>${esc(r.donor.name)}</strong><small>Phone: ${esc(r.donor.phone)}<br>Email: ${esc(r.donor.email)}</small>` : ""}
+        </div></div></div>`;
+  } catch (err) { $("trackBody").innerHTML = ""; show($("trackMsg"), esc(err.message), false); }
+}
+$("trackForm").addEventListener("submit", e => { e.preventDefault(); check(); });
+const q = new URLSearchParams(location.search);
+if (q.get("id") && q.get("code")) { $("tId").value = q.get("id"); $("tCode").value = q.get("code"); check(); }
+</script>
+</body>
+</html>

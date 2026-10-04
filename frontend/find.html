@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find donors | Blood Matcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js"></script>
+</head>
+<body>
+<header id="site-header"></header>
+<main class="narrow">
+  <section class="card">
+    <h2>Find donors</h2>
+    <p class="sub">Enter the blood group the patient needs. We list every compatible, available donor.</p>
+    <form id="searchForm">
+      <label>Blood group needed <select id="sGroup" required></select></label>
+      <label>City or area <input id="sCity" placeholder="e.g. Hosur"></label>
+      <button type="submit">Search donors</button>
+    </form>
+    <p id="searchMsg" class="msg"></p>
+    <div id="results" class="results"></div>
+  </section>
+  <section class="card" id="requestBox" hidden>
+    <h2>Request contact with <span id="donorLabel"></span></h2>
+    <p class="sub">The donor will see your name and phone number and can accept or decline.</p>
+    <form id="requestForm">
+      <label>Your name <input id="rName" required></label>
+      <label>Your phone <input id="rPhone" type="tel" required></label>
+      <label>Patient blood group <select id="rGroup" required></select></label>
+      <label>Units needed <input id="rUnits" type="number" min="1" max="10" value="1" required></label>
+      <label>Urgency <select id="rUrgency"><option>CRITICAL</option><option selected>HIGH</option><option>MEDIUM</option><option>LOW</option></select></label>
+      <div class="actions"><button type="submit">Send request</button><button type="button" class="ghost" id="cancelReq">Cancel</button></div>
+    </form>
+    <p id="requestMsg" class="msg"></p>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script>
+fillGroups("sGroup"); fillGroups("rGroup");
+let chosen = null;
+$("searchForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("requestBox").hidden = true;
+  try {
+    const donors = await api("/search?" + new URLSearchParams({ blood_group: $("sGroup").value, city: $("sCity").value }));
+    $("searchMsg").className = "msg"; $("rGroup").value = $("sGroup").value;
+    $("results").innerHTML = donors.length
+      ? donors.map(d => `<div class="donor"><div class="drop"><span>${esc(d.blood_group)}</span></div>
+          <div class="info"><strong>${esc(d.name)}</strong><small>${esc(d.city)}</small></div>
+          <button data-id="${d.id}" data-name="${esc(d.name)}">Request contact</button></div>`).join("")
+      : '<p class="empty">No available donors match yet. Try a nearby city or leave the city blank.</p>';
+  } catch (err) { show($("searchMsg"), esc(err.message), false); }
+});
+$("results").addEventListener("click", e => {
+  const b = e.target.closest("button[data-id]"); if (!b) return;
+  chosen = b.dataset.id; $("donorLabel").textContent = b.dataset.name;
+  $("requestMsg").className = "msg"; $("requestBox").hidden = false;
+  $("requestBox").scrollIntoView({ behavior: "smooth" });
+});
+$("cancelReq").addEventListener("click", () => { $("requestBox").hidden = true; });
+$("requestForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  try {
+    const r = await api("/requests", post({ donor_id: chosen, seeker_name: $("rName").value, seeker_phone: $("rPhone").value,
+      seeker_blood_group: $("rGroup").value, units_needed: $("rUnits").value, urgency: $("rUrgency").value }));
+    show($("requestMsg"), `Request sent. Your request ID is <strong>${r.request_id}</strong> and access code is <strong>${esc(r.access_code)}</strong>. Save them.
+      <a href="/track?id=${r.request_id}&code=${encodeURIComponent(r.access_code)}">Track this request</a>`);
+  } catch (err) { show($("requestMsg"), esc(err.message), false); }
+});
+</script>
+</body>
+</html>

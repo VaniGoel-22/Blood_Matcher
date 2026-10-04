@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Become a donor | Blood Matcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js"></script>
+</head>
+<body>
+<header id="site-header"></header>
+<main class="narrow">
+  <section class="card">
+    <h2>Become a donor</h2>
+    <p class="sub">Your phone and email are shared only with seekers you approve.</p>
+    <form id="donorForm">
+      <label>Full name <input id="dName" required></label>
+      <label>Blood group <select id="dGroup" required></select></label>
+      <label>City or area <input id="dCity" required></label>
+      <label>Phone <input id="dPhone" type="tel" required></label>
+      <label>Email <input id="dEmail" type="email" required></label>
+      <label class="check"><input id="dAvail" type="checkbox" checked> Available to donate now</label>
+      <button type="submit">Register as donor</button>
+    </form>
+    <p id="donorMsg" class="msg"></p>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script>
+fillGroups("dGroup");
+$("donorForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  try {
+    const r = await api("/donors", post({ name: $("dName").value, blood_group: $("dGroup").value, city: $("dCity").value,
+      phone: $("dPhone").value, email: $("dEmail").value, is_available: $("dAvail").checked }));
+    show($("donorMsg"), `You are registered. Your donor ID is <strong>${r.donor_id}</strong> and access code is <strong>${esc(r.access_code)}</strong>. Save both, you need them to answer requests.
+      <a href="/dashboard?id=${r.donor_id}&code=${encodeURIComponent(r.access_code)}">Open my dashboard</a>`);
+    e.target.reset();
+  } catch (err) { show($("donorMsg"), esc(err.message), false); }
+});
+</script>
+</body>
+</html>

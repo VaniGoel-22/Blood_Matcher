@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blood Matcher | Emergency blood donation program</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js"></script>
+</head>
+<script>
+(async () => {
+  try {
+    const s = await api("/stats");
+    $("stDonated").textContent = s.units_donated;
+    $("stSought").textContent = s.units_sought;
+    $("stDonors").textContent = s.donors;
+    $("stRequests").textContent = s.requests;
+    $("stAccepted").textContent = s.accepted + " accepted";
+  } catch (e) {}
+})();
+</script>
+<body>
+<header id="site-header"></header>
+<main>
+  <section class="hero">
+    <div>
+      <h1><span class="red">Blood</span> donation saves lives</h1>
+      <p>When a patient needs blood urgently, every minute counts. Our program connects people in need with compatible donors in their city, and keeps every donor's phone and email private until the donor says yes.</p>
+      <a class="btn" href="/find">Find a donor now</a>
+    </div>
+    <svg viewBox="0 0 300 280" aria-hidden="true">
+      <path d="M150 262C58 190 24 128 40 78c16-48 82-52 110 6 28-58 94-54 110-6 16 50-18 112-110 184z" fill="none" stroke="#d4202e" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M150 215c-52-44-72-80-62-110 10-28 48-30 62 4 14-34 52-32 62-4 10 30-10 66-62 110z" fill="#a6121f"/>
+      <path d="M150 90c14 24 28 38 28 56a28 28 0 0 1-56 0c0-18 14-32 28-56z" fill="#fff"/>
+    </svg>
+  </section>
+
+  <section>
+    <h2>What would you like to do?</h2>
+    <p class="sub">Choose an option to continue.</p>
+    <div class="options">
+      <a class="option" href="/find"><span class="badge">For patients and families</span><h3>Find donors</h3><p>Search compatible, available donors by blood group and city.</p><span class="go">Open page</span></a>
+      <a class="option" href="/register"><span class="badge">For donors</span><h3>Become a donor</h3><p>Register your blood group, city and availability. Your contact details stay private.</p><span class="go">Open page</span></a>
+      <a class="option" href="/dashboard"><span class="badge">For donors</span><h3>Donor dashboard</h3><p>See contact requests, accept or decline them, and update your availability.</p><span class="go">Open page</span></a>
+      <a class="option" href="/track"><span class="badge">For patients and families</span><h3>Track my request</h3><p>Check whether a donor accepted. Contact details appear once they do.</p><span class="go">Open page</span></a>
+    </div>
+  </section>
+    <section class="card">
+    <h2>Blood donated and sought</h2>
+    <p class="sub">Live numbers from this program.</p>
+    <div class="stats">
+      <div class="stat main"><strong id="stDonated">0</strong><span>Blood donated<br><small>units accepted by donors</small></span></div>
+      <div class="stat"><strong id="stSought">0</strong><span>Blood sought<br><small>units requested</small></span></div>
+      <div class="stat"><strong id="stDonors">0</strong><span>Donors registered</span></div>
+      <div class="stat"><strong id="stRequests">0</strong><span>Requests sent<br><small id="stAccepted">0 accepted</small></span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>How it works</h2>
+    <p class="sub">Simple, safe and private.</p>
+    <ol class="steps">
+      <li><strong>Search</strong><br>Pick the blood group needed. We apply the standard compatibility rules for you.</li>
+      <li><strong>Request</strong><br>Send a contact request to a donor. They see your name, phone and urgency.</li>
+      <li><strong>Connect</strong><br>If the donor accepts, their phone and email are shown to you.</li>
+    </ol>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+</body>
+</html>

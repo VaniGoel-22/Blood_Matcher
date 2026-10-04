@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Donor dashboard | Blood Matcher</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js"></script>
+</head>
+<body>
+<header id="site-header"></header>
+<main class="narrow">
+  <section class="card">
+    <h2>Donor dashboard</h2>
+    <p class="sub">Use the donor ID and access code you received when you registered.</p>
+    <form id="dashForm">
+      <label>Donor ID <input id="dashId" type="number" min="1" required></label>
+      <label>Access code <input id="dashCode" required></label>
+      <button type="submit">Open dashboard</button>
+    </form>
+    <p id="dashMsg" class="msg"></p>
+    <div id="dashBody"></div>
+  </section>
+</main>
+<footer id="site-footer"></footer>
+<script>
+async function loadDash() {
+  const id = $("dashId").value, code = $("dashCode").value;
+  try {
+    const shared = d.requests.filter(r => r.status === "ACCEPTED").map(r => esc(r.seeker_name));
+    $("dashBody").innerHTML = `<p>Hello ${esc(d.name)} (${esc(d.blood_group)}). You are <strong>${d.is_available ? "available" : "not available"}</strong>.
+      <button class="ghost" id="toggleAvail">${d.is_available ? "Mark unavailable" : "Mark available"}</button></p>
+      <p>Your phone and email were shared with: <strong>${shared.length ? shared.join(", ") : "nobody yet"}</strong>.</p>
+      <div class="results">${rows || '<p class="empty">No requests yet.</p>'}</div>`;
+    $("toggleAvail").onclick = async () => {
+      try { await api(`/donors/${id}/availability`, post({ code, available: !d.is_available })); loadDash(); }
+      catch (err) { show($("dashMsg"), esc(err.message), false); }
+    };
+  } catch (err) { $("dashBody").innerHTML = ""; show($("dashMsg"), esc(err.message), false); }
+}
+$("dashForm").addEventListener("submit", e => { e.preventDefault(); loadDash(); });
+$("dashBody").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-act]"); if (!b) return;
+  try { await api(`/donors/${$("dashId").value}/requests/${b.dataset.rid}`, post({ code: $("dashCode").value, action: b.dataset.act })); loadDash(); }
+  catch (err) { show($("dashMsg"), esc(err.message), false); }
+});
+const q = new URLSearchParams(location.search);
+if (q.get("id") && q.get("code")) { $("dashId").value = q.get("id"); $("dashCode").value = q.get("code"); loadDash(); }
+</script>
+</body>
+</html>
