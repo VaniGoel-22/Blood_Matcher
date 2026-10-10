@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, abort, jsonify, request, send_from_directory
 
-import models
+from backend import models
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 PAGES = {"find", "register", "dashboard", "track"}
