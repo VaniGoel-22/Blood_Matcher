@@ -1,7 +1,7 @@
 import re
 import secrets
 
-from database import get_db
+from backend.database import get_db
 
 BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 URGENCY_LEVELS = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
